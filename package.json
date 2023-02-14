@@ -1,0 +1,17 @@
+{
+    "name": "quiz-app-server",
+    "version": "0.1.0",
+    "scripts": {
+        "dev": "nodemon index.js",
+        "format": "npx prettier --write ."
+    },
+    "dependencies": {
+        "dotenv": "^16.0.3",
+        "express": "^4.18.2",
+        "mongoose": "^6.9.1"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.20",
+        "prettier": "2.8.4"
+    }
+}
