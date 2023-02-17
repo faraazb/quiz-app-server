@@ -12,7 +12,7 @@ const schema = new Schema(
             required: true,
         },
         settings: {
-            default_points: {
+            defaultPoints: {
                 type: Number,
                 default: 1,
             },
