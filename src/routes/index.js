@@ -1,0 +1,14 @@
+const express = require("express");
+const { sendResponse } = require("../helpers/response");
+const usersRouter = require("./users.routes");
+
+const indexRouter = express.Router();
+
+indexRouter.get("/", (req, res) => {
+    sendResponse(req, res, { message: "ok" });
+});
+
+module.exports = {
+    indexRouter,
+    usersRouter,
+};
