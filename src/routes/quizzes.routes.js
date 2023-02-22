@@ -1,5 +1,5 @@
 const express = require("express");
-const { quizzesController } = require("../controllers");
+const { quizzesController, questionsController } = require("../controllers");
 const { validate, required } = require("../helpers/validation");
 const { sendResponse } = require("../helpers/response");
 
@@ -10,6 +10,20 @@ router.get("/", async (req, res, next) => {
     try {
         const quizzes = await quizzesController.list();
         sendResponse(req, res, { data: quizzes });
+    }
+    catch (err) {
+        console.log(err);
+        next(err);
+    }
+});
+
+router.get("/:id/questions", async (req, res, next) => {
+    try {
+        const {
+            params: {id}
+        } = req;
+        const questionIds = await questionsController.list(id);
+        sendResponse(req, res, { data: questionIds });
     }
     catch (err) {
         console.log(err);
