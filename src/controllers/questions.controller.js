@@ -7,7 +7,7 @@ async function list(id)   {
 async function getQuestionById(questionId)    {
     return await Question.find({_id: questionId}).populate({
         path: 'options',
-        select: ["_id", "name"],
+        select: ["_id", "text"],
     }).select(["-__v", "-createdAt", "-updatedAt"]);
 }
 module.exports = {
