@@ -1,6 +1,6 @@
 const express = require("express");
 const { sendErrorResponse } = require("./helpers/response");
-const { indexRouter, usersRouter, quizzesRouter } = require("./routes");
+const { indexRouter, usersRouter, quizzesRouter, questionsRouter } = require("./routes");
 const cors = require('cors');
 const app = express();
 app.use(express.json());
@@ -9,6 +9,7 @@ app.use(cors());
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/quizzes", quizzesRouter);
+app.use("/questions", questionsRouter);
 // error handling
 app.use(sendErrorResponse);
 
