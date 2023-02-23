@@ -23,7 +23,13 @@ router.get("/:id/questions", async (req, res, next) => {
             params: {id}
         } = req;
         const questionIds = await questionsController.list(id);
-        sendResponse(req, res, { data: questionIds });
+        if(Object.keys(questionIds).length !== 0) {
+            sendResponse(req, res, { data: questionIds });
+            return;
+        }
+        return res.status(404).json({
+            message: "Quiz not found",
+        });
     }
     catch (err) {
         console.log(err);

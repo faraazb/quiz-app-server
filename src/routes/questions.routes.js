@@ -10,7 +10,13 @@ router.get("/:questionId", async (req, res, next) => {
             params: {questionId}
         } = req;
         const question = await questionsController.getQuestionById(questionId);
-        sendResponse(req, res, { data: question });
+        if(Object.keys(question).length !== 0)    {
+            sendResponse(req, res, { data: question });
+            return;
+        }
+        return res.status(404).json({
+            message: "Question not found",
+        })
     }
     catch (err) {
         console.log(err);
