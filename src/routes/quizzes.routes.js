@@ -1,6 +1,6 @@
 const express = require("express");
+const { validate, required, isMongoId } = require("../helpers/validation");
 const { quizzesController, questionsController } = require("../controllers");
-const { validate, required } = require("../helpers/validation");
 const { sendResponse } = require("../helpers/response");
 
 
@@ -54,4 +54,10 @@ router.post("/", validate([
     }
 });
 
+router
+    .route("/:id/submissions")
+    .get(
+        validate([isMongoId("id", "quiz")]),
+        quizzesController.getSubmissionsAndStats
+    );
 module.exports = router;

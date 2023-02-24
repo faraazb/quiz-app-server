@@ -1,6 +1,5 @@
-const { body, validationResult } = require('express-validator');
-const AppError = require('./error');
-
+const { body, validationResult, param } = require("express-validator");
+const AppError = require("./error");
 
 // useful for one-off fields with validate([])
 function required(fields) {
@@ -13,12 +12,12 @@ const isRequired = {
     isEmpty: {
         negated: true,
         bail: true,
-        errorMessage: "this field is required"
-    }
-}
+        errorMessage: "this field is required",
+    },
+};
 
 // sequential processing, stops running validations chain if the previous one have failed.
-const validate = validations => {
+const validate = (validations) => {
     return async (req, res, next) => {
         for (let validation of validations) {
             const result = await validation.run(req);
@@ -29,14 +28,28 @@ const validate = validations => {
         if (errors.isEmpty()) {
             return next();
         }
-        const fieldErrors = errors.array().map(({msg, param}) => ({field: param, error: msg}));
-        next(new AppError({ statusCode: 400, message: "failure", hints: fieldErrors }));
+        const fieldErrors = errors
+            .array()
+            .map(({ msg, param }) => ({ field: param, error: msg }));
+        next(
+            new AppError({
+                statusCode: 400,
+                message: "failure",
+                hints: fieldErrors,
+            })
+        );
     };
 };
 
+function isMongoId(field, name) {
+    return param(field)
+        .isMongoId()
+        .withMessage(`invalid ${name ? name + " " : ""}id`);
+}
 
 module.exports = {
     validate,
     required,
-    isRequired
+    isRequired,
+    isMongoId,
 };
