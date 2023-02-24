@@ -13,19 +13,23 @@ const schema = new Schema(
         },
         score: {
             type: Number,
-            default: 0,
+            default: 0
         },
         selectedOptions: [
             {
                 question: {
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "Question",
+                    required: true,
                 },
                 options: [
-                    { type: mongoose.Schema.Types.ObjectId, ref: "Option" },
+                    { type: mongoose.Schema.Types.ObjectId, ref: "Option", required: true, },
                 ],
             },
         ],
+        correctlyAnsweredCount: {
+            type: Number
+        }
     },
     {
         timestamps: true,

@@ -1,5 +1,5 @@
 const { checkSchema } = require("express-validator");
-const { Quiz, Question, Option, Report, Submission } = require("../models");
+const { Quiz, Report, Submission } = require("../models");
 const { isRequired } = require("../helpers/validation");
 const { sendResponse } = require("../helpers/response");
 const AppError = require("../helpers/error");
@@ -14,25 +14,10 @@ async function create({ title, description, questions: quests, settings }) {
         const { defaultPoints } = settings;
         quiz.settings.defaultPoints = defaultPoints;
     }
-    const questions = await Promise.all(
-        quests.map(async ({ text, points, options, type }) => {
-            const question = new Question({
-                text,
-                points: points || quiz.settings.defaultPoints,
-                quiz,
-                type,
-            });
-            // first insert all options
-            const opts = await Option.insertMany(
-                options.map((option) => ({ ...option, question: question }))
-            );
-            question.options = opts;
-            // then return the question saving promise for Promise.all()
-            return question.save();
-        })
-    );
-    // attach the saved questions to the quiz
+    // create and attach the saved questions to the quiz
+    const { questions, totalPoints } = await questionsController.createMany(quests);
     quiz.questions = questions;
+    quiz.totalPoints = totalPoints;
     // attach a newly created and saved report instance to the quiz
     const report = await new Report().save();
     quiz.report = report;
@@ -40,6 +25,7 @@ async function create({ title, description, questions: quests, settings }) {
     await quiz.save();
     return quiz.id;
 }
+
 async function getSubmissionsAndStats(req, res, next) {
     //get quiz id from params
     const {
@@ -85,6 +71,7 @@ async function getSubmissionsAndStats(req, res, next) {
         next(err);
     }
 }
+
 const validateQuestions = checkSchema({
     questions: {
         ...isRequired,

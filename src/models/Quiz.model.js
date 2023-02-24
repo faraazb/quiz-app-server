@@ -11,6 +11,10 @@ const schema = new Schema(
             type: String,
             required: true,
         },
+        totalPoints: {
+            type: Number,
+            default: 0,
+        },
         settings: {
             defaultPoints: {
                 type: Number,
@@ -32,6 +36,13 @@ schema.virtual("questions", {
     ref: "Question",
     localField: "_id",
     foreignField: "quiz",
+});
+
+schema.virtual("questionsCount", {
+    ref: "Question",
+    localField: "_id",
+    foreignField: "quiz",
+    count: true,
 });
 
 schema.virtual("submissions", {
