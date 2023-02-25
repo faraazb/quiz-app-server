@@ -8,6 +8,13 @@ async function list() {
     return await Quiz.find({}).populate("submissionsCount");
 }
 
+async function getQuizById(id)   {
+    return await Quiz.find({_id: id}).populate({
+        path: "questions",
+        populate: "options",
+    });
+}
+
 async function create({ title, description, questions: quests, settings }) {
     const quiz = new Quiz({ title, description });
     if (settings) {
@@ -123,4 +130,5 @@ module.exports = {
     create,
     validateQuestions,
     getSubmissionsAndStats,
+    getQuizById,
 };
