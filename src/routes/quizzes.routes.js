@@ -20,10 +20,10 @@ router.get("/", async (req, res, next) => {
 router.get("/:id/questions", async (req, res, next) => {
     try {
         const {
-            params: {id}
+            params: { id }
         } = req;
         const questionIds = await questionsController.list(id);
-        if(Object.keys(questionIds).length !== 0) {
+        if (Object.keys(questionIds).length !== 0) {
             sendResponse(req, res, { data: questionIds });
             return;
         }
@@ -45,8 +45,8 @@ router.post("/", validate([
 ]), async (req, res, next) => {
     try {
         const { title, description, settings, questions } = req.body;
-        const quizId = await quizzesController.create({title, description, questions, settings});
-        sendResponse(req, res, { data: {id: quizId} })
+        const quizId = await quizzesController.create({ title, description, questions, settings });
+        sendResponse(req, res, { data: { id: quizId } })
     }
     catch (err) {
         console.log(err);
@@ -60,4 +60,5 @@ router
         validate([isMongoId("id", "quiz")]),
         quizzesController.getSubmissionsAndStats
     );
+
 module.exports = router;

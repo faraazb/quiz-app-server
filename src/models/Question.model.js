@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Option = require("./Option.model");
 const { Schema } = mongoose;
 
 const schema = new Schema(
@@ -32,6 +33,12 @@ schema.virtual("options", {
     localField: "_id",
     foreignField: "question",
 });
+
+// delete options of all questions that will be deleted
+schema.pre("deleteMany", async function () {
+    const questions = await this.model.find(this.getQuery()).select("id");
+    await Option.deleteMany({question: {$in: questions}});
+})
 
 const Question = mongoose.model("Question", schema);
 

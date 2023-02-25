@@ -1,5 +1,6 @@
 const { checkSchema } = require("express-validator");
-const { Quiz, Question, Option, Report, Submission } = require("../models");
+const { Quiz, Report, Submission } = require("../models");
+const questionsController = require("./questions.controller");
 const { isRequired } = require("../helpers/validation");
 const { sendResponse } = require("../helpers/response");
 const AppError = require("../helpers/error");
@@ -14,25 +15,12 @@ async function create({ title, description, questions: quests, settings }) {
         const { defaultPoints } = settings;
         quiz.settings.defaultPoints = defaultPoints;
     }
-    const questions = await Promise.all(
-        quests.map(async ({ text, points, options, type }) => {
-            const question = new Question({
-                text,
-                points: points || quiz.settings.defaultPoints,
-                quiz,
-                type,
-            });
-            // first insert all options
-            const opts = await Option.insertMany(
-                options.map((option) => ({ ...option, question: question }))
-            );
-            question.options = opts;
-            // then return the question saving promise for Promise.all()
-            return question.save();
-        })
-    );
-    // attach the saved questions to the quiz
-    quiz.questions = questions;
+    if (quests && quests.length > 0) {
+        // create and attach the saved questions to the quiz
+        const { questions, totalPoints } = await questionsController.createMany(quests);
+        quiz.questions = questions;
+        quiz.totalPoints = totalPoints;
+    }
     // attach a newly created and saved report instance to the quiz
     const report = await new Report().save();
     quiz.report = report;
@@ -40,6 +28,7 @@ async function create({ title, description, questions: quests, settings }) {
     await quiz.save();
     return quiz.id;
 }
+
 async function getSubmissionsAndStats(req, res, next) {
     //get quiz id from params
     const {
@@ -47,17 +36,22 @@ async function getSubmissionsAndStats(req, res, next) {
     } = req;
     const result = {};
     //Queries used for projection
+    const quizQuery = {
+        _id: false,
+        title: true,
+        description: true,
+    };
     const reportQuery = { statistics: true };
-    const submissionQuery = { score: true };
+    const submissionQuery = { _id: false, score: true };
     const userQuery = { username: true };
     try {
         //find report
-        const report = await Quiz.findById(id, { report: 1 }).populate(
+        const quiz = await Quiz.findById(id, quizQuery).populate(
             "report",
             reportQuery
         );
-        //If report not found raise error
-        if (!report) {
+        //If quiz not found raise error
+        if (!quiz) {
             const err = new AppError({
                 err: new Error("Data not found"),
                 statusCode: 404,
@@ -66,8 +60,10 @@ async function getSubmissionsAndStats(req, res, next) {
             });
             throw err;
         }
-        //Add report to result
-        result["report"] = report.report;
+        //Add quiz to result
+        const { title, description, report } = quiz;
+        result["quiz"] = { title, description };
+        result["report"] = report;
         //Find submissions
         const submissions = await Submission.find(
             { quiz: id },
@@ -85,9 +81,10 @@ async function getSubmissionsAndStats(req, res, next) {
         next(err);
     }
 }
+
 const validateQuestions = checkSchema({
     questions: {
-        ...isRequired,
+        optional: true,
         isArray: {
             bail: true,
         },
