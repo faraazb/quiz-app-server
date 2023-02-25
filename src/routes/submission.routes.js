@@ -10,7 +10,7 @@ router.get("/:id", async (req, res, next) => {
             params: { id }
         } = req;
         const submission = await submissionController.getSubmissionById(id);
-        if (Object.keys(submission).length !== 0) {
+        if (submission !== null && Object.keys(submission).length !== 0) {
             sendResponse(req, res, { data: submission });
             return;
         }

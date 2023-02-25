@@ -7,15 +7,21 @@ const {
     User,
     Submission,
     Report,
-} = require("./src/models");
+} = require("../quiz-app-server/src/models");
 const quizzes = require("./quizzes.json");
 
 mongoose.set("strictQuery", false);
 
-let usernames = ["harshitha", "kashmeera", "faraaz", "vaibhav", "TriviaBuff", "QuizGenius", "sheldon_cooper", "DwightKSchrute", "KnowItAll"]
+let usernames = [
+    "harshitha", "kashmeera", "faraaz", "vaibhav", "TriviaBuff", "QuizGenius", 
+    "sheldon_cooper", "DwightKSchrute", "KnowItAll", "Dwight_42", "Penny_64",
+    "Walter_09", "Monica_31", "HistoryBuff", "PuzzlePundit", "TechSavvy",
+    "ScienceNerd", "QuizWizard", "QuizChampion", "QuizGenius", "KnowledgeNinja",
+    "big_brainzz", "pro_quiz_81", "number_one", "dom_toretti", "michael_super_scott"
+]
 let altUsernames = []
-const subLo = 5;
-const subHi = 10;
+const subLo = 8;
+const subHi = usernames.length;
 
 require("dotenv").config();
 
@@ -76,7 +82,7 @@ async function populate() {
     // iterate over all quizzes in the JSON file
     for (const q of quizzes) {
         // create a quiz instance
-        const quiz = new Quiz({ title: q.title, description: q.description, points: q.defaultPoints });
+        const quiz = new Quiz({ title: q.title, description: q.description, settings: { defaultPoints: q.defaultPoints }, totalPoints: q.totalPoints });
         // create a random number of submissions and its user
         const submissions = [];
         let subCount = randomInt(subLo, subHi);
@@ -110,12 +116,21 @@ async function populate() {
                     // check if ALL right options are marked and increase submission score
                     if (answers.every((ans) => markedOpts.includes(ans))) {
                         submission.score = submission.score + question.points;
+                        submission.correctlyAnsweredCount = (submission.correctlyAnsweredCount || 0) + 1;
                     }
                 })
                 // then return the question saving promise for Promise.all() 
                 return question.save();
             })
         );
+        // this is just me trying aggregation, a simple forEach is just better
+        // for all our uses probably
+        const quizId = mongoose.Types.ObjectId(quiz.id);
+        const [aggregation] = await Question.aggregate([
+            { $match: { quiz: quizId } },
+            { $group: { _id: null, totalPoints: { $sum: "$points" } } }
+        ]);
+        quiz.totalPoints = aggregation.totalPoints;
         // calculate stats and save submissions
         let highestScore = 0;
         let sum = 0;
