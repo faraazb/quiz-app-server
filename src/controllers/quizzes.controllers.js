@@ -1,5 +1,6 @@
 const { checkSchema } = require("express-validator");
 const { Quiz, Report, Submission } = require("../models");
+const questionsController = require("./questions.controller");
 const { isRequired } = require("../helpers/validation");
 const { sendResponse } = require("../helpers/response");
 const AppError = require("../helpers/error");
@@ -14,10 +15,12 @@ async function create({ title, description, questions: quests, settings }) {
         const { defaultPoints } = settings;
         quiz.settings.defaultPoints = defaultPoints;
     }
-    // create and attach the saved questions to the quiz
-    const { questions, totalPoints } = await questionsController.createMany(quests);
-    quiz.questions = questions;
-    quiz.totalPoints = totalPoints;
+    if (quests && quests.length > 0) {
+        // create and attach the saved questions to the quiz
+        const { questions, totalPoints } = await questionsController.createMany(quests);
+        quiz.questions = questions;
+        quiz.totalPoints = totalPoints;
+    }
     // attach a newly created and saved report instance to the quiz
     const report = await new Report().save();
     quiz.report = report;
@@ -74,7 +77,7 @@ async function getSubmissionsAndStats(req, res, next) {
 
 const validateQuestions = checkSchema({
     questions: {
-        ...isRequired,
+        optional: true,
         isArray: {
             bail: true,
         },
