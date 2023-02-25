@@ -47,17 +47,22 @@ async function getSubmissionsAndStats(req, res, next) {
     } = req;
     const result = {};
     //Queries used for projection
+    const quizQuery = {
+        _id: false,
+        title: true,
+        description: true,
+    };
     const reportQuery = { statistics: true };
-    const submissionQuery = { score: true };
+    const submissionQuery = { _id: false, score: true };
     const userQuery = { username: true };
     try {
         //find report
-        const report = await Quiz.findById(id, { report: 1 }).populate(
+        const quiz = await Quiz.findById(id, quizQuery).populate(
             "report",
             reportQuery
         );
-        //If report not found raise error
-        if (!report) {
+        //If quiz not found raise error
+        if (!quiz) {
             const err = new AppError({
                 err: new Error("Data not found"),
                 statusCode: 404,
@@ -66,8 +71,10 @@ async function getSubmissionsAndStats(req, res, next) {
             });
             throw err;
         }
-        //Add report to result
-        result["report"] = report.report;
+        //Add quiz to result
+        const { title, description, report } = quiz;
+        result["quiz"] = { title, description };
+        result["report"] = report;
         //Find submissions
         const submissions = await Submission.find(
             { quiz: id },
