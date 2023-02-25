@@ -3,6 +3,7 @@ const { sendResponse } = require("../helpers/response");
 const usersRouter = require("./users.routes");
 const quizzesRouter = require("./quizzes.routes");
 const questionsRouter = require("./questions.routes");
+const submissionRouter= require("./submission.routes");
 
 const indexRouter = express.Router();
 
@@ -15,4 +16,5 @@ module.exports = {
     usersRouter,
     quizzesRouter,
     questionsRouter,
+    submissionRouter,
 };
