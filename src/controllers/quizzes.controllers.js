@@ -95,9 +95,10 @@ async function getSubmissionsAndStats(req, res, next) {
         _id: false,
         title: true,
         description: true,
+        totalPoints: true
     };
     const reportQuery = { statistics: true };
-    const submissionQuery = { _id: false, score: true };
+    const submissionQuery = { _id: false, score: true, correctlyAnsweredCount: true };
     const userQuery = { username: true };
     try {
         //find report
@@ -116,8 +117,8 @@ async function getSubmissionsAndStats(req, res, next) {
             throw err;
         }
         //Add quiz to result
-        const { title, description, report } = quiz;
-        result["quiz"] = { title, description };
+        const { title, description, totalPoints, report } = quiz;
+        result["quiz"] = { title, description, totalPoints };
         result["report"] = report;
         //Find submissions
         const submissions = await Submission.find(
