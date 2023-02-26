@@ -17,7 +17,7 @@ router.get("/", async (req, res, next) => {
     }
 });
 
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", validate([isMongoId("id", "quiz")]), async (req, res, next) => {
     try {
         const {
             params: {id}
