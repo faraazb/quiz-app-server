@@ -1,10 +1,11 @@
 const express = require("express");
 const { sendResponse } = require("../helpers/response");
+const { validate, isMongoId } = require("../helpers/validation");
 const router = express.Router();
 
 // const { Submission } = require("../models");
 const { submissionController } = require("../controllers");
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", validate([isMongoId("id", "submission")]), async (req, res, next) => {
     try {
         const {
             params: { id }
