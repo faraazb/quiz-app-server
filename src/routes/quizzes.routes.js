@@ -5,7 +5,11 @@ const {
     isMongoId,
     paramRequired,
 } = require("../helpers/validation");
-const { quizzesController, questionsController } = require("../controllers");
+const {
+    quizzesController,
+    questionsController,
+    submissionController,
+} = require("../controllers");
 const { sendResponse } = require("../helpers/response");
 
 const router = express.Router();
@@ -20,25 +24,28 @@ router.get("/", async (req, res, next) => {
     }
 });
 
-router.get("/:id", validate([isMongoId("id", "quiz")]), async (req, res, next) => {
-    try {
-        const {
-            params: {id}
-        } = req;
-        const quiz = await quizzesController.getQuizById(id);
-        if(Object.keys(quiz).length !== 0) {
-            sendResponse(req, res, { data: quiz });
-            return;
+router.get(
+    "/:id",
+    validate([isMongoId("id", "quiz")]),
+    async (req, res, next) => {
+        try {
+            const {
+                params: { id },
+            } = req;
+            const quiz = await quizzesController.getQuizById(id);
+            if (Object.keys(quiz).length !== 0) {
+                sendResponse(req, res, { data: quiz });
+                return;
+            }
+            return res.status(404).json({
+                message: "Quiz not found",
+            });
+        } catch (err) {
+            console.log(err);
+            next(err);
         }
-        return res.status(404).json({
-            message: "Quiz not found",
-        });
     }
-    catch (err) {
-        console.log(err);
-        next(err);
-    }
-});
+);
 
 router.get("/:id/questions", async (req, res, next) => {
     try {
@@ -115,6 +122,13 @@ router
     .get(
         validate([isMongoId("id", "quiz")]),
         quizzesController.getSubmissionsAndStats
-    );
-
+    )
+    .post(validate([isMongoId("id", "quiz")]), async (req, res, next) => {
+        try {
+            const submissionId = await submissionController.create();
+            sendResponse(req, res, { data: { submission_id: submissionId } });
+        } catch (err) {
+            next(err);
+        }
+    });
 module.exports = router;
