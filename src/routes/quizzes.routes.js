@@ -3,15 +3,13 @@ const { validate, required, isMongoId } = require("../helpers/validation");
 const { quizzesController, questionsController } = require("../controllers");
 const { sendResponse } = require("../helpers/response");
 
-
 const router = express.Router();
 
 router.get("/", async (req, res, next) => {
     try {
         const quizzes = await quizzesController.list();
         sendResponse(req, res, { data: quizzes });
-    }
-    catch (err) {
+    } catch (err) {
         console.log(err);
         next(err);
     }
@@ -20,7 +18,7 @@ router.get("/", async (req, res, next) => {
 router.get("/:id/questions", async (req, res, next) => {
     try {
         const {
-            params: { id }
+            params: { id },
         } = req;
         const questionIds = await questionsController.list(id);
         if (Object.keys(questionIds).length !== 0) {
@@ -30,29 +28,46 @@ router.get("/:id/questions", async (req, res, next) => {
         return res.status(404).json({
             message: "Quiz not found",
         });
-    }
-    catch (err) {
+    } catch (err) {
         console.log(err);
         next(err);
     }
 });
 
-router.post("/", validate([
-    required([
-        "title", "description"
+router.post(
+    "/",
+    validate([
+        required(["title", "description"]),
+        ...quizzesController.validateQuestions,
     ]),
-    ...quizzesController.validateQuestions
-]), async (req, res, next) => {
-    try {
-        const { title, description, settings, questions } = req.body;
-        const quizId = await quizzesController.create({ title, description, questions, settings });
-        sendResponse(req, res, { data: { id: quizId } })
+    async (req, res, next) => {
+        try {
+            const { title, description, settings, questions } = req.body;
+            const quizId = await quizzesController.create({
+                title,
+                description,
+                questions,
+                settings,
+            });
+            sendResponse(req, res, { data: { id: quizId } });
+        } catch (err) {
+            console.log(err);
+            next(err);
+        }
     }
-    catch (err) {
-        console.log(err);
-        next(err);
+);
+
+router.put(
+    "/",
+    validate([...quizzesController.validateQuestions]),
+    async (req, res, next) => {
+        try {
+            const { title, description, settings, questions } = req.body;
+        } catch (err) {
+            next(err);
+        }
     }
-});
+);
 
 router
     .route("/:id/submissions")

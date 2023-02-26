@@ -17,7 +17,9 @@ async function create({ title, description, questions: quests, settings }) {
     }
     if (quests && quests.length > 0) {
         // create and attach the saved questions to the quiz
-        const { questions, totalPoints } = await questionsController.createMany(quests);
+        const { questions, totalPoints } = await questionsController.createMany(
+            quests
+        );
         quiz.questions = questions;
         quiz.totalPoints = totalPoints;
     }
@@ -28,7 +30,9 @@ async function create({ title, description, questions: quests, settings }) {
     await quiz.save();
     return quiz.id;
 }
-
+async function updateQuiz(title, description, questions) {
+    return title;
+}
 async function getSubmissionsAndStats(req, res, next) {
     //get quiz id from params
     const {
