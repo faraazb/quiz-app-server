@@ -39,6 +39,7 @@ async function createMany(questsionsData) {
 //This function updates question if exists else adds new one
 async function updateMany(quiz, questionsData) {
     let totalPoints = 0;
+    let addedQuestions = [];
     let questions = await Promise.all(
         questionsData.map(async ({ _id, text, points, options, type }) => {
             let question;
@@ -49,6 +50,7 @@ async function updateMany(quiz, questionsData) {
             }
             //If question exists
             if (question) {
+                addedQuestions.push(question);
                 await question.update({ text, points, type });
             } else {
                 //if question not exists create new
@@ -78,7 +80,7 @@ async function updateMany(quiz, questionsData) {
             return question.save();
         })
     );
-    return { questions, totalPoints };
+    return { questions: [...questions], totalPoints };
 }
 
 module.exports = {

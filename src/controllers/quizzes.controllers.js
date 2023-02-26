@@ -9,8 +9,8 @@ async function list() {
     return await Quiz.find({}).populate("submissionsCount");
 }
 
-async function getQuizById(id)   {
-    return await Quiz.find({_id: id}).populate({
+async function getQuizById(id) {
+    return await Quiz.find({ _id: id }).populate({
         path: "questions",
         populate: "options",
     });
@@ -72,7 +72,13 @@ async function updateQuiz(id, title, description, settings, questionsData) {
         );
         quiz.questions = questions;
         quiz.totalPoints = totalPoints;
-        // const allQuizQuestions = await Question.find({ quiz: quiz._id });
+        let allQuizQuestions = await Question.find({ quiz: quiz._id }, "_id");
+        allQuizQuestions = allQuizQuestions.map((question) => question.id);
+        const addedQuestionsIds = questions.map((question) => question.id);
+        const questionsToRemove = allQuizQuestions.filter((question) => {
+            return !addedQuestionsIds.includes(question);
+        });
+        await Question.deleteMany({ _id: { $in: questionsToRemove } });
     }
     //finally save quiz
     await quiz.save();
