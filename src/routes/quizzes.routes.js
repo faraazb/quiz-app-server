@@ -76,7 +76,7 @@ router.put(
             const {
                 params: { id },
             } = req;
-            const quizId = quizzesController.updateQuiz(
+            const quizId = await quizzesController.updateQuiz(
                 id,
                 title,
                 description,
@@ -85,7 +85,6 @@ router.put(
             );
             sendResponse(req, res, { data: { id: quizId } });
         } catch (err) {
-            console.log(err);
             next(err);
         }
     }

@@ -1,5 +1,5 @@
 const { checkSchema } = require("express-validator");
-const { Quiz, Report, Submission } = require("../models");
+const { Quiz, Report, Submission, Question } = require("../models");
 const questionsController = require("./questions.controller");
 const { isRequired } = require("../helpers/validation");
 const { sendResponse } = require("../helpers/response");
@@ -30,8 +30,46 @@ async function create({ title, description, questions: quests, settings }) {
     await quiz.save();
     return quiz.id;
 }
-async function updateQuiz(id, title, description, settings, questions) {
-    return title;
+async function updateQuiz(id, title, description, settings, questionsData) {
+    const quiz = await Quiz.findById(id);
+
+    //If quiz not found raise error
+    if (!quiz) {
+        const err = new AppError({
+            err: new Error("Data not found"),
+            statusCode: 404,
+            message: "Data not found",
+            hints: "Check quiz id",
+        });
+        throw err;
+    }
+
+    //Update title if given
+    if (title) {
+        quiz.title = title;
+    }
+    //Update description if given
+    if (description) {
+        quiz.description = description;
+    }
+    //Update settings if given
+    if (settings) {
+        const { defaultPoints } = settings;
+        quiz.settings.defaultPoints = defaultPoints;
+    }
+    if (questionsData && questionsData.length > 0) {
+        // create and attach the saved questions to the quiz
+        const { questions, totalPoints } = await questionsController.updateMany(
+            quiz,
+            questionsData
+        );
+        quiz.questions = questions;
+        quiz.totalPoints = totalPoints;
+        // const allQuizQuestions = await Question.find({ quiz: quiz._id });
+    }
+    //finally save quiz
+    await quiz.save();
+    return quiz._id;
 }
 async function getSubmissionsAndStats(req, res, next) {
     //get quiz id from params
