@@ -1,5 +1,10 @@
 const express = require("express");
-const { validate, required, isMongoId } = require("../helpers/validation");
+const {
+    validate,
+    required,
+    isMongoId,
+    paramRequired,
+} = require("../helpers/validation");
 const { quizzesController, questionsController } = require("../controllers");
 const { sendResponse } = require("../helpers/response");
 
@@ -58,12 +63,29 @@ router.post(
 );
 
 router.put(
-    "/",
-    validate([...quizzesController.validateQuestions]),
+    "/:id",
+
+    validate([
+        paramRequired(["id"]),
+        isMongoId("id", "quiz"),
+        ...quizzesController.validateQuestions,
+    ]),
     async (req, res, next) => {
         try {
             const { title, description, settings, questions } = req.body;
+            const {
+                params: { id },
+            } = req;
+            const quizId = quizzesController.updateQuiz(
+                id,
+                title,
+                description,
+                settings,
+                questions
+            );
+            sendResponse(req, res, { data: { id: quizId } });
         } catch (err) {
+            console.log(err);
             next(err);
         }
     }

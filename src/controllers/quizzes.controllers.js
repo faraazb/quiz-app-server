@@ -30,7 +30,7 @@ async function create({ title, description, questions: quests, settings }) {
     await quiz.save();
     return quiz.id;
 }
-async function updateQuiz(title, description, questions) {
+async function updateQuiz(id, title, description, settings, questions) {
     return title;
 }
 async function getSubmissionsAndStats(req, res, next) {
@@ -124,4 +124,5 @@ module.exports = {
     create,
     validateQuestions,
     getSubmissionsAndStats,
+    updateQuiz,
 };
