@@ -1,5 +1,3 @@
-const AppError = require("../helpers/error");
-const { sendResponse } = require("../helpers/response");
 const {
     Submission,
     Report,
@@ -75,7 +73,7 @@ async function create(quizId, submissionData) {
         { path: "submissionsCount" },
     ]);
     const { report } = quiz;
-    const { totalPoints, submissionsCount } = quiz;
+    const { submissionsCount } = quiz;
     const { statistics } = report;
     const { averageScore, highestScore } = statistics;
     statistics.averageScore =
