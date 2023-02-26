@@ -36,6 +36,7 @@ async function createMany(questsionsData) {
     return { questions, totalPoints };
 }
 
+//This function updates question if exists else adds new one
 async function updateMany(quiz, questionsData) {
     let totalPoints = 0;
     let questions = await Promise.all(
@@ -63,10 +64,12 @@ async function updateMany(quiz, questionsData) {
             totalPoints += question.points;
             //remove old options
             await Option.deleteMany({ question: question._id });
+            //If question updated no need of saving it
             if (isUpdate)
                 return await Option.insertMany(
                     options.map((option) => ({ ...option, question: question }))
                 );
+            //Else save options and assign it to question
             const opts = await Option.insertMany(
                 options.map((option) => ({ ...option, question: question }))
             );
