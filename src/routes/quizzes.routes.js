@@ -125,7 +125,13 @@ router
     )
     .post(validate([isMongoId("id", "quiz")]), async (req, res, next) => {
         try {
-            const submissionId = await submissionController.create();
+            const {
+                params: { id },
+            } = req;
+            const submissionId = await submissionController.create(
+                id,
+                req.body
+            );
             sendResponse(req, res, { data: { submission_id: submissionId } });
         } catch (err) {
             next(err);
