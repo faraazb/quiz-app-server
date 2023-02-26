@@ -17,6 +17,26 @@ router.get("/", async (req, res, next) => {
     }
 });
 
+router.get("/:id", validate([isMongoId("id", "quiz")]), async (req, res, next) => {
+    try {
+        const {
+            params: {id}
+        } = req;
+        const quiz = await quizzesController.getQuizById(id);
+        if(Object.keys(quiz).length !== 0) {
+            sendResponse(req, res, { data: quiz });
+            return;
+        }
+        return res.status(404).json({
+            message: "Quiz not found",
+        });
+    }
+    catch (err) {
+        console.log(err);
+        next(err);
+    }
+});
+
 router.get("/:id/questions", async (req, res, next) => {
     try {
         const {
