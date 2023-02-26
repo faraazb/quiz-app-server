@@ -5,6 +5,9 @@ const AppError = require("./error");
 function required(fields) {
     return body(fields).not().isEmpty().withMessage("this field is required");
 }
+function paramRequired(fields) {
+    return param(fields).not().isEmpty().withMessage("this field is required");
+}
 
 // useful for entire schema validation
 const isRequired = {
@@ -51,5 +54,6 @@ module.exports = {
     validate,
     required,
     isRequired,
+    paramRequired,
     isMongoId,
 };
