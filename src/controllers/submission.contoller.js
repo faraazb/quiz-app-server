@@ -50,6 +50,7 @@ async function create(quizId, submissionData) {
     //object for saving in submissions
     const selectedOptionsToSave = [];
     let score = 0;
+    let correctlyAnsweredCount = 0;
     for (let question of questions) {
         const { _id, selectedOptions } = question;
         const quizQuestion = await Question.findById(_id);
@@ -59,13 +60,16 @@ async function create(quizId, submissionData) {
             question: _id,
             options: selectedOptions,
         });
-        score += getScore(type, points, options, selectedOptions);
+        const currScore = getScore(type, points, options, selectedOptions);
+        if (currScore > 0) correctlyAnsweredCount++;
+        score += currScore;
     }
     const submission = new Submission({
         quiz: quizId,
         user,
         score,
         selectedOptions: selectedOptionsToSave,
+        correctlyAnsweredCount,
     });
     await submission.save();
     const quiz = await Quiz.findById(quizId).populate([

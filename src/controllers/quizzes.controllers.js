@@ -95,10 +95,9 @@ async function getSubmissionsAndStats(req, res, next) {
         _id: false,
         title: true,
         description: true,
-        totalPoints: true
+        totalPoints: true,
     };
     const reportQuery = { statistics: true };
-    const submissionQuery = { _id: false, score: true, correctlyAnsweredCount: true };
     const userQuery = { username: true };
     try {
         //find report
@@ -121,14 +120,12 @@ async function getSubmissionsAndStats(req, res, next) {
         result["quiz"] = { title, description, totalPoints };
         result["report"] = report;
         //Find submissions
-        const submissions = await Submission.find(
-            { quiz: id },
-            submissionQuery
-        ).populate("user", userQuery);
+        const submissions = await Submission.find({ quiz: id })
+            .populate("user", userQuery)
+            .select(["score", "correctlyAnsweredCount"]);
 
         //Add submissions to result
         result["submissions"] = submissions;
-
         //Send response
         sendResponse(req, res, {
             data: result,
