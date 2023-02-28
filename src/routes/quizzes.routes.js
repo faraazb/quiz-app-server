@@ -14,39 +14,6 @@ const { sendResponse } = require("../helpers/response");
 
 const router = express.Router();
 
-router.get("/", async (req, res, next) => {
-    try {
-        const quizzes = await quizzesController.list();
-        sendResponse(req, res, { data: quizzes });
-    } catch (err) {
-        console.log(err);
-        next(err);
-    }
-});
-
-router.get(
-    "/:id",
-    validate([isMongoId("id", "quiz")]),
-    async (req, res, next) => {
-        try {
-            const {
-                params: { id },
-            } = req;
-            const quiz = await quizzesController.getQuizById(id);
-            if (Object.keys(quiz).length !== 0) {
-                sendResponse(req, res, { data: quiz });
-                return;
-            }
-            return res.status(404).json({
-                message: "Quiz not found",
-            });
-        } catch (err) {
-            console.log(err);
-            next(err);
-        }
-    }
-);
-
 router.get("/:id/questions", async (req, res, next) => {
     try {
         const {
@@ -66,22 +33,44 @@ router.get("/:id/questions", async (req, res, next) => {
     }
 });
 
-router.post(
-    "/",
-    validate([
-        required(["title", "description"]),
-        ...quizzesController.validateQuestions,
-    ]),
+
+router
+    .route("/:id/submissions")
+    .get(
+        validate([isMongoId("id", "quiz")]),
+        quizzesController.getSubmissionsAndStats
+    )
+    .post(validate([isMongoId("id", "quiz")]), async (req, res, next) => {
+        try {
+            const {
+                params: { id },
+            } = req;
+            const submissionId = await submissionController.create(
+                id,
+                req.body
+            );
+            sendResponse(req, res, { data: { submission_id: submissionId } });
+        } catch (err) {
+            next(err);
+        }
+    });
+
+router.get(
+    "/:id",
+    validate([isMongoId("id", "quiz")]),
     async (req, res, next) => {
         try {
-            const { title, description, settings, questions } = req.body;
-            const quizId = await quizzesController.create({
-                title,
-                description,
-                questions,
-                settings,
+            const {
+                params: { id },
+            } = req;
+            const quiz = await quizzesController.getQuizById(id);
+            if (Object.keys(quiz).length !== 0) {
+                sendResponse(req, res, { data: quiz });
+                return;
+            }
+            return res.status(404).json({
+                message: "Quiz not found",
             });
-            sendResponse(req, res, { data: { id: quizId } });
         } catch (err) {
             console.log(err);
             next(err);
@@ -117,24 +106,38 @@ router.put(
     }
 );
 
-router
-    .route("/:id/submissions")
-    .get(
-        validate([isMongoId("id", "quiz")]),
-        quizzesController.getSubmissionsAndStats
-    )
-    .post(validate([isMongoId("id", "quiz")]), async (req, res, next) => {
+router.get("/", async (req, res, next) => {
+    try {
+        const quizzes = await quizzesController.list();
+        sendResponse(req, res, { data: quizzes });
+    } catch (err) {
+        console.log(err);
+        next(err);
+    }
+});
+
+router.post(
+    "/",
+    validate([
+        required(["title", "description"]),
+        ...quizzesController.validateQuestions,
+    ]),
+    async (req, res, next) => {
         try {
-            const {
-                params: { id },
-            } = req;
-            const submissionId = await submissionController.create(
-                id,
-                req.body
-            );
-            sendResponse(req, res, { data: { submission_id: submissionId } });
+            const { title, description, settings, questions } = req.body;
+            const quizId = await quizzesController.create({
+                title,
+                description,
+                questions,
+                settings,
+            });
+            sendResponse(req, res, { data: { id: quizId } });
         } catch (err) {
+            console.log(err);
             next(err);
         }
-    });
+    }
+);
+
+
 module.exports = router;
